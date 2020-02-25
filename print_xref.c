@@ -8,7 +8,7 @@
 void print_xref(int *arr, int xref_loc, int max) {
 
     printf("xref\n");
-    printf("0 %d\n", max);
+    printf("0 %d\n", max+1);
     for(int i = 0; i<=max; i++) {
         int gen = 0;
         char fn = 'n';
@@ -22,7 +22,8 @@ void print_xref(int *arr, int xref_loc, int max) {
     }
 
     if ( xref_loc >= 0 ) {
-        printf("\n\n");
+        printf("\n");
+        printf("trailer << /Size %d /Root 1 0 R >>\n", max+1);
         printf("startxref\n");
         printf("%d\n", xref_loc);
     }
