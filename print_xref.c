@@ -5,6 +5,7 @@
 #include <string.h>
 #define MAX_MATCHES 10
 
+// print xref along with trailer ans startxref info.
 void print_xref(int *arr, int xref_loc, int max) {
 
     printf("xref\n");
@@ -31,12 +32,12 @@ void print_xref(int *arr, int xref_loc, int max) {
 }
 
 
-
-int find_objs(char *str, int *objs, int loc, int *max) {
+// find and populate object id along with their location.
+void populate_objects(char *str, int *objs, int loc, int *max) {
     regex_t regex;
     int reti;
 
-    /* Compile regular expression */
+    // look for an expression like 101 0 obj 
     reti = regcomp(&regex, "([[:digit:]]+) [[:digit:]]+ obj", REG_EXTENDED);
     if (reti) {
         fprintf(stderr, "Could not compile regex\n");
@@ -44,7 +45,7 @@ int find_objs(char *str, int *objs, int loc, int *max) {
     }
 
     regmatch_t matches[MAX_MATCHES];
-    char buff[10];  // upto 10 digit number.
+    char buff[10];  // 10 digit number.should be good enough for max obj id.
     if (regexec(&regex, str, MAX_MATCHES, matches, 0) == 0) {
         int len = matches[1].rm_eo - matches[1].rm_so;
         memcpy(buff, str + matches[1].rm_so, len);
@@ -58,14 +59,13 @@ int find_objs(char *str, int *objs, int loc, int *max) {
         *(objs + 2* objnum) = objnum;
         *(objs + 2* objnum + 1) = loc + matches[1].rm_so;
     
-        return 0;
     }
-    return -1;
+    return;
 
 }
 int main(int argc, char * argv[])
 {
-	unsigned long off = 0;
+    unsigned long off = 0;
     int num_objs = 1024;
     int max = -1;
 
@@ -81,34 +81,34 @@ int main(int argc, char * argv[])
     int max_linesize = 1024 * 100;
     char *str = (char*) malloc(sizeof(char) * max_linesize);
 
-	if (argc!=2)
-	{
-		fprintf(stderr, "Usage:\n\t%s filename.pdf\n\n", argv[0]);
-		return(1);
-	}
+    if (argc!=2)
+    {
+        fprintf(stderr, "Usage:\n\t%s filename.pdf\n\n", argv[0]);
+        return(1);
+    }
 
-	FILE *f;
-	f = fopen(argv[1], "r");
-	if (f == NULL)
-	{
-		fprintf(stderr, "Cannot open file %s\n", argv[1]);
-		return(2);
-	}
+    FILE *f;
+    f = fopen(argv[1], "r");
+    if (f == NULL)
+    {
+        fprintf(stderr, "Cannot open file %s\n", argv[1]);
+        return(2);
+    }
 
 
     int xref_loc = -1;
-	while (!feof(f))
-	{
+    while (!feof(f))
+    {
         fgets(str, max_linesize, f);
         if ( strncmp(str, "xref", 4) == 0) {
             xref_loc = off;
         }
 
-        find_objs(str, objs, off, &max);
-		off += strlen(str);
-	}
+        populate_objects(str, objs, off, &max);
+        off += strlen(str);
+    }
 
     print_xref(objs, xref_loc, max);
-	fclose(f);
-	return(0);
+    fclose(f);
+    return(0);
 }
