@@ -1,6 +1,10 @@
 #!/bin/bash
+
+# take one or more jpg images and print pdf objects
+# that can be readily embedded in a pdf.
+
 if [ $# -eq 0 ]; then
-    echo "usage: $0 image-file"
+    echo "usage: $0 image-file [image-file] ... "
     exit 1
 fi
 
